@@ -1,0 +1,53 @@
+spring:
+  main:
+    allow-circular-references: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: egormalov.2007@gmail.com
+    password: rcgp bktc fgwn nrfy
+    properties:
+      mail:
+        debug: false
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  security:
+    user:
+      name: user_microservice
+      password: password
+  application:
+    name: User-Service
+  cache:
+    type: redis
+    cache-names: redis-cache
+  data:
+    redis:
+      host: localhost
+      password: passwordForRedis
+      port: 6379
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  flyway:
+    url: jdbc:postgresql://localhost:5432/avanza_natural
+    user: postgres
+    password: password
+    baseline-on-migrate: true
+    create-schemas: true
+    default-schema: users
+  datasource:
+    url: jdbc:postgresql://localhost:5432/avanza_natural
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+server:
+  port: 8080
+
+web:
+  service:
+    uri: http://localhost:7777
