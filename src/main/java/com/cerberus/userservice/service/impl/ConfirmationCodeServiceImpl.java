@@ -3,14 +3,13 @@ package com.cerberus.userservice.service.impl;
 import com.cerberus.userservice.dto.UserDto;
 import com.cerberus.userservice.exception.NotFoundException;
 import com.cerberus.userservice.exception.ValidationException;
-import com.cerberus.userservice.mapper.EntityDtoMapper;
+import com.cerberus.userservice.mapper.UserMapper;
 import com.cerberus.userservice.model.ConfirmationCode;
 import com.cerberus.userservice.model.User;
 import com.cerberus.userservice.repository.ConfirmationCodeRepository;
 import com.cerberus.userservice.service.ConfirmationCodeService;
 import com.cerberus.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +25,7 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
 
     private final ConfirmationCodeRepository confirmationCodeRepository;
 
-    private final EntityDtoMapper mapper;
+    private final UserMapper mapper;
 
     private final UserService userService;
 

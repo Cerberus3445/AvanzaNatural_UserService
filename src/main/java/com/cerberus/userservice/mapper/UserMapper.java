@@ -5,7 +5,7 @@ import com.cerberus.userservice.model.User;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
-public interface EntityDtoMapper {
+public interface UserMapper {
 
     UserDto toDto(User user);
 

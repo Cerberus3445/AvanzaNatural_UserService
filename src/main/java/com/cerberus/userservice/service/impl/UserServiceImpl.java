@@ -2,11 +2,9 @@ package com.cerberus.userservice.service.impl;
 
 import com.cerberus.userservice.dto.UserDto;
 import com.cerberus.userservice.exception.NotFoundException;
-import com.cerberus.userservice.mapper.EntityDtoMapper;
+import com.cerberus.userservice.mapper.UserMapper;
 import com.cerberus.userservice.model.User;
 import com.cerberus.userservice.repository.UserRepository;
-import com.cerberus.userservice.service.ConfirmationCodeService;
-import com.cerberus.userservice.service.MailService;
 import com.cerberus.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +24,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
-    private final EntityDtoMapper mapper;
+    private final UserMapper mapper;
 
     @Override
     @Cacheable(value = "user", key = "#id")
