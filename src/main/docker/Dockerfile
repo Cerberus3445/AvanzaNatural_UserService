@@ -3,6 +3,6 @@ LABEL authors="egorm"
 
 VOLUME /tmp
 WORKDIR /app
-ADD maven/product_service-0.0.3-SNAPSHOT.jar /app/productservice.jar
-EXPOSE 7070
-ENTRYPOINT ["java", "-jar", "productservice.jar"]
+ADD maven/user-service-0.0.1-SNAPSHOT.jar /app/user-service.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "user-service.jar"]

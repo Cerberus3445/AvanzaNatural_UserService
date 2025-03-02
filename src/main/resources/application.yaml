@@ -46,4 +46,4 @@ server:
 
 web:
   service:
-    uri: http://localhost:7777
+    uri: http://localhost:3000
