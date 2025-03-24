@@ -1,5 +1,6 @@
 package com.cerberus.userservice.service.impl;
 
+import com.cerberus.userservice.cache.CacheClear;
 import com.cerberus.userservice.dto.UserDto;
 import com.cerberus.userservice.exception.NotFoundException;
 import com.cerberus.userservice.mapper.UserMapper;
@@ -13,8 +14,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 
 @Slf4j
 @Service
@@ -24,13 +23,15 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
-    private final UserMapper mapper;
+    private final UserMapper userMapper;
+
+    private final CacheClear cacheClear;
 
     @Override
     @Cacheable(value = "user", key = "#id")
     public UserDto get(Long id) {
         log.info("get {}", id);
-        return this.mapper.toDto(this.userRepository.findById(id)
+        return this.userMapper.toDto(this.userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(id)));
     }
 
@@ -39,7 +40,9 @@ public class UserServiceImpl implements UserService {
     public void create(UserDto userDto) {
         log.info("create {}", userDto);
         userDto.setEmailConfirmed(false);
-        this.userRepository.save(this.mapper.toEntity(userDto));
+        this.userRepository.save(this.userMapper.toEntity(userDto));
+
+        this.cacheClear.clearGetByEmail();
     }
 
     @Override
@@ -61,6 +64,7 @@ public class UserServiceImpl implements UserService {
         }, () -> {
             throw new NotFoundException(id);
         });
+        this.cacheClear.clearGetByEmail();
     }
 
     @Override
@@ -69,11 +73,16 @@ public class UserServiceImpl implements UserService {
     public void delete(Long id) {
         log.info("delete {}", id);
         this.userRepository.deleteById(id);
+
+        this.cacheClear.clearGetByEmail();
     }
 
     @Override
-    public Optional<UserDto> getByEmail(String email) {
-        return this.userRepository.findByEmail(email).map(this.mapper::toDto);
+    @Cacheable(value = "getByEmail", key = "#email")
+    public UserDto getByEmail(String email) {
+        return this.userMapper.toDto(this.userRepository.findByEmail(email).orElseThrow(
+                () -> new NotFoundException(email)
+        ));
     }
 
     @Override
