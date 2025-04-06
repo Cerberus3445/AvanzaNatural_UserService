@@ -1,6 +1,7 @@
 package com.cerberus.userservice.controller;
 
 import com.cerberus.userservice.exception.AlreadyExistsException;
+import com.cerberus.userservice.exception.AuthorizationException;
 import com.cerberus.userservice.exception.NotFoundException;
 import com.cerberus.userservice.exception.ValidationException;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,15 @@ public class AdviceController {
                 HttpStatus.BAD_REQUEST, exception.getMessage()
         );
         problemDetail.setTitle("User already exists");
+        return problemDetail;
+    }
+
+    @ExceptionHandler(AuthorizationException.class)
+    public ProblemDetail handleException(AuthorizationException exception){
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED, exception.getMessage()
+        );
+        problemDetail.setTitle("Unauthorized");
         return problemDetail;
     }
 }

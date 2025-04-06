@@ -18,4 +18,6 @@ public interface UserService {
     UserDto getByEmail(String email);
 
     void updateEmailConfirmedStatus(Long userId);
+
+    void updateEmail(Long userId, String newPassword);
 }

@@ -1,12 +1,16 @@
 package com.cerberus.userservice.service;
 
-import com.cerberus.userservice.dto.UserDto;
+import com.cerberus.userservice.model.CodeVerificationRequest;
+import com.cerberus.userservice.model.CreateConfirmationCodeRequest;
+import com.cerberus.userservice.model.UpdatePasswordRequest;
 
 public interface ConfirmationCodeService {
 
-    Integer create(UserDto userDto);
+    Integer create(CreateConfirmationCodeRequest codeRequest);
 
-    Integer recreate(UserDto userDto);
+    Integer recreate(CreateConfirmationCodeRequest codeRequest);
 
-    void confirm(UserDto userDto, Integer code);
+    void confirmEmail(CodeVerificationRequest codeRequest);
+
+    void updatePassword(UpdatePasswordRequest passwordRequest, String jwtToken);
 }
