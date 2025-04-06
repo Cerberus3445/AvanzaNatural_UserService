@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Builder
@@ -19,6 +21,12 @@ public class ConfirmationCode {
     private Long id;
 
     private Integer code;
+
+    @Temporal(value = TemporalType.TIMESTAMP)
+    private LocalDateTime expirationDate;
+
+    @Enumerated(value = EnumType.STRING)
+    private Type type;
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")

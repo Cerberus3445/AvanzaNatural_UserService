@@ -53,6 +53,6 @@ public class UserController {
     }
 
     private String collectErrorsToString(List<FieldError> fieldErrors){
-        return fieldErrors.stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList().toString();
+        return fieldErrors.stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList().toString().replace("[", "").replace("]", "");
     }
 }

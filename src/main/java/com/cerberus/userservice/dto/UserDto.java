@@ -39,6 +39,7 @@ public class UserDto implements Serializable {
     @NotBlank(message = "Пароль не может быть пустым")
     private String password;
 
+    @NotNull(message = "The userId field cannot be empty.")
     private Boolean emailConfirmed;
 
     @NotNull(message = "Роль не может быть пустой")

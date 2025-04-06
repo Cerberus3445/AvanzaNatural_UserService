@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +28,15 @@ public class UserServiceImpl implements UserService {
 
     private final CacheClear cacheClear;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     @Cacheable(value = "user", key = "#id")
     public UserDto get(Long id) {
         log.info("get {}", id);
-        return this.userMapper.toDto(this.userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(id)));
+        return this.userMapper.toDto(this.userRepository.findById(id).orElseThrow(
+                () -> new NotFoundException(id))
+        );
     }
 
     @Override
@@ -46,8 +50,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @CacheEvict(value = "user", key = "#id")
     @Transactional
+    @CacheEvict(value = "user", key = "#id")
     public void update(Long id, UserDto userDto) {
         log.info("update {}, {}", id, userDto);
         this.userRepository.findById(id).ifPresentOrElse(user -> {
@@ -68,10 +72,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @CacheEvict(value = "user", key = "#id")
     @Transactional
+    @CacheEvict(value = "user", key = "#id")
     public void delete(Long id) {
         log.info("delete {}", id);
+        this.userRepository.findById(id).orElseThrow(
+                () -> new NotFoundException(id)
+        );
+
         this.userRepository.deleteById(id);
 
         this.cacheClear.clearGetByEmail();
@@ -86,11 +94,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @CacheEvict(value = "user", key = "#id")
     @Transactional
+    @CacheEvict(value = "user", key = "#id")
     public void updateEmailConfirmedStatus(Long id) {
         User user = this.userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(id));
         user.setEmailConfirmed(true);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "user", key = "#id")
+    public void updateEmail(Long id, String newPassword) {
+        User user = this.userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(id));
+        user.setPassword(this.passwordEncoder.encode(newPassword));
     }
 }

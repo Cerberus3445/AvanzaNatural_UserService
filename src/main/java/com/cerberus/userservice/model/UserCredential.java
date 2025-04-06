@@ -1,5 +1,7 @@
 package com.cerberus.userservice.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -7,13 +9,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
+@Data
+@AllArgsConstructor
 public class UserCredential implements UserDetails {
 
-    private final User user;
-
-    public UserCredential(User user) {
-        this.user = user;
-    }
+    private User user;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
