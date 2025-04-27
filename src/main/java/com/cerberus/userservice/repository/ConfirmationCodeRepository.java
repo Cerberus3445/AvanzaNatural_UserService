@@ -14,7 +14,7 @@ public interface ConfirmationCodeRepository extends JpaRepository<ConfirmationCo
 
     void deleteByUser_Id(Long userId);
 
-    Integer countByUser_Id(Long userId);
+    Integer countByTypeAndUser_Id(Type type, Long userId);
 
     void deleteByCode(Integer code);
 }

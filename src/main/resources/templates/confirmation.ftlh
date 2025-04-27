@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Thank you for registration ${firstName}</title>
+    <title>Thank you for registration</title>
     <style>
         #body {
             display: flex;
@@ -34,7 +34,7 @@
 <div id="body">
     <div id="div">
         <h1 style="text-align: center">Registration</h1>
-        <p>Hello, ${firstName} ${lastName}!</p>
+        <p>Hello!</p>
         <p>Your code ${code}.</p>
         <p>With best regards, <br>Egor Malov</p>
         <a id="a" href="https://github.com/Cerberus3445/TaskListProject">Github</a>

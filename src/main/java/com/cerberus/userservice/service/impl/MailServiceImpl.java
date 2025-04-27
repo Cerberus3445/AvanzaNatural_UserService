@@ -2,6 +2,7 @@ package com.cerberus.userservice.service.impl;
 
 import com.cerberus.userservice.dto.UserDto;
 import com.cerberus.userservice.model.ConfirmationCode;
+import com.cerberus.userservice.model.CreateConfirmationCodeRequest;
 import com.cerberus.userservice.service.MailService;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
@@ -30,23 +31,20 @@ public class MailServiceImpl implements MailService {
 
     @Override
     @SneakyThrows(MessagingException.class)
-    public void sendEmail(UserDto user, Integer code) {
+    public void sendEmail(CreateConfirmationCodeRequest codeRequest, Integer code) {
         MimeMessage mimeMessage = this.mailSender.createMimeMessage();
         MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
-        mimeMessageHelper.setSubject("Email confirmation code for %s %s".formatted(
-                user.getFirstName(), user.getLastName()));
-        mimeMessageHelper.setTo(user.getEmail());
-        String emailContent = getConfirmationEmailContent(user, code);
+        mimeMessageHelper.setTo(codeRequest.getEmail());
+        mimeMessageHelper.setSubject("Avanza Natural");
+        String emailContent = getConfirmationEmailContent(code);
         mimeMessageHelper.setText(emailContent, true);
         this.mailSender.send(mimeMessage);
     }
 
     @SneakyThrows({IOException.class, TemplateException.class})
-    private String getConfirmationEmailContent(UserDto user, Integer code) {
+    private String getConfirmationEmailContent(Integer code) {
         StringWriter stringWriter = new StringWriter();
         Map<String, Object> module = new HashMap<>();
-        module.put("firstName", user.getFirstName());
-        module.put("lastName", user.getLastName());
         module.put("code", code);
         configuration.getTemplate("confirmation.ftlh").process(module, stringWriter);
         return stringWriter.getBuffer().toString();
