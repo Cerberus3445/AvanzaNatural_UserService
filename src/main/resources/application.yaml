@@ -27,6 +27,7 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
+    open-in-view: false
   flyway:
     url: jdbc:postgresql://localhost:5432/avanza_natural
     user: postgres

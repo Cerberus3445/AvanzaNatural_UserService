@@ -10,9 +10,6 @@ import com.cerberus.userservice.service.ConfirmationCodeService;
 import com.cerberus.userservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,18 +35,21 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
 
     @Override
     public Integer create(CreateConfirmationCodeRequest codeRequest) {
-        Integer countConfirmationCode = this.confirmationCodeRepository.countByUser_Id(codeRequest.getUserDto().getId());
+        Integer countConfirmationCode = 0;
+
+        switch(codeRequest.getConfirmationCodeType()){
+            case EMAIL -> countConfirmationCode += this.confirmationCodeRepository.countByTypeAndUser_Id(Type.EMAIL, codeRequest.getUserId());
+            case PASSWORD -> countConfirmationCode += this.confirmationCodeRepository.countByTypeAndUser_Id(Type.PASSWORD, codeRequest.getUserId());
+            default -> throw new ValidationException("The confirmationCodeType is invalid.");
+        }
 
         if(countConfirmationCode >= 1){ //The capacities allow you to send only 1 email
             throw new ValidationException("The email has already been sent. If you haven't received it, then recreate it.");
         }
 
         Random random = new Random();
-        User user = this.mapper.toEntity(codeRequest.getUserDto());
-
-        if(user.getEmailConfirmed() && codeRequest.getConfirmationCodeType() == Type.EMAIL){
-            throw new ValidationException("the email has already been confirmed.");
-        }
+        User user = new User();
+        user.setId(codeRequest.getUserId());
 
         ConfirmationCode confirmationCode = this.confirmationCodeRepository.save(new ConfirmationCode(
                 null, random.nextInt(9_999_999),LocalDateTime.now().plusHours(EXPIRATION),codeRequest.getConfirmationCodeType(),user
@@ -60,13 +60,10 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
 
     @Override
     public Integer recreate(CreateConfirmationCodeRequest codeRequest) {
-        this.confirmationCodeRepository.deleteByUser_Id(codeRequest.getUserDto().getId());
-        User user = this.mapper.toEntity(codeRequest.getUserDto());
+        this.confirmationCodeRepository.deleteByUser_Id(codeRequest.getUserId());
+        User user = new User();
+        user.setId(codeRequest.getUserId());
         Random random = new Random();
-
-        if(user.getEmailConfirmed() && codeRequest.getConfirmationCodeType() == Type.EMAIL){
-            throw new ValidationException("the email has already been confirmed.");
-        }
 
         ConfirmationCode confirmationCode = this.confirmationCodeRepository.save(new ConfirmationCode(
                 null, random.nextInt(9_999_999),LocalDateTime.now().plusHours(EXPIRATION),codeRequest.getConfirmationCodeType(),user
@@ -78,7 +75,7 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
     @Override
     public void confirmEmail(CodeVerificationRequest code) {
         ConfirmationCode confirmationCode = this.confirmationCodeRepository.findByTypeAndUser_Id(Type.EMAIL, code.getUserId())
-                .orElseThrow(() -> new NotFoundException(code.getUserId()));
+                .orElseThrow(() -> new NotFoundException("Code not found"));
 
         if(Objects.equals(confirmationCode.getCode(), code.getCode()) && LocalDateTime.now().isBefore(confirmationCode.getExpirationDate())){
             this.userService.updateEmailConfirmedStatus(code.getUserId());

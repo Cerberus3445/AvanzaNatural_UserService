@@ -51,14 +51,14 @@ public class ConfirmationCodeController {
         if(bindingResult.hasFieldErrors()) throw new ValidationException(collectErrorsToString(bindingResult.getFieldErrors()));
 
         Integer code = this.confirmationCodeService.recreate(codeRequest);
-        this.mailService.sendEmail(codeRequest.getUserDto(),code);
+        this.mailService.sendEmail(codeRequest,code);
         return ResponseEntity.ok("The email has been sent successfully.");
     }
 
     @PostMapping("/create")
     public ResponseEntity<String> create(@RequestBody CreateConfirmationCodeRequest codeRequest){
         Integer code = this.confirmationCodeService.create(codeRequest);
-        this.mailService.sendEmail(codeRequest.getUserDto(),code);
+        this.mailService.sendEmail(codeRequest,code);
         return ResponseEntity.ok("The email has been sent successfully.");
     }
 

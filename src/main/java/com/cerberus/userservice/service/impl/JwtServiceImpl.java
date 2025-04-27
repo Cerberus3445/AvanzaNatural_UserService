@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -24,12 +23,6 @@ public class JwtServiceImpl implements JwtService {
     public static final String SECRET = "5367566B5970337336762342342342341139792F4123F452811482B4D6251655468576D5A71347437";
 
     @Override
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        String email = extractEmail(token);
-        return Objects.equals(userDetails.getUsername(), email) && !isTokenExpired(token);
-    }
-
-    @Override
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -40,17 +33,9 @@ public class JwtServiceImpl implements JwtService {
         return Collections.singleton(new SimpleGrantedAuthority(claims.get("role").toString()));
     }
 
-    private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
     private Key getSignKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET);
         return Keys.hmacShaKeyFor(keyBytes);
-    }
-
-    private Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
