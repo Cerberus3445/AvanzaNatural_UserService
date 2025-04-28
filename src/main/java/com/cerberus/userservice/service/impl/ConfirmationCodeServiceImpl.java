@@ -48,7 +48,7 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
         }
 
         Random random = new Random();
-        User user = new User();
+        User user = new User(); //создать через вызов из user-service, чтобы проверить существование email
         user.setId(codeRequest.getUserId());
 
         ConfirmationCode confirmationCode = this.confirmationCodeRepository.save(new ConfirmationCode(
