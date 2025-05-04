@@ -66,7 +66,10 @@ public class ConfirmationCodeController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<String> create(@RequestBody CreateConfirmationCodeRequest codeRequest){
+    public ResponseEntity<String> create(@RequestBody @Valid CreateConfirmationCodeRequest codeRequest,
+                                         BindingResult bindingResult){
+        if(bindingResult.hasFieldErrors()) throw new ValidationException(collectErrorsToString(bindingResult.getFieldErrors()));
+
         User user = this.userMapper.toEntity(this.userService.getByEmail(codeRequest.getEmail()));
         Integer code = this.confirmationCodeService.create(user, codeRequest);
 

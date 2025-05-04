@@ -3,7 +3,6 @@ package com.cerberus.userservice.service.impl;
 import com.cerberus.userservice.client.IdentityClient;
 import com.cerberus.userservice.exception.NotFoundException;
 import com.cerberus.userservice.exception.ValidationException;
-import com.cerberus.userservice.mapper.UserMapper;
 import com.cerberus.userservice.model.*;
 import com.cerberus.userservice.repository.ConfirmationCodeRepository;
 import com.cerberus.userservice.service.ConfirmationCodeService;
@@ -25,21 +24,21 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
 
     private final ConfirmationCodeRepository confirmationCodeRepository;
 
-    private final UserMapper mapper;
-
     private final UserService userService;
 
     private final static Integer EXPIRATION = 24;
 
     private final IdentityClient identityClient;
 
+    private final Random random = new Random();
+
     @Override
-    public Integer create(CreateConfirmationCodeRequest codeRequest) {
+    public Integer create(User user, CreateConfirmationCodeRequest codeRequest) {
         Integer countConfirmationCode = 0;
 
         switch(codeRequest.getConfirmationCodeType()){
-            case EMAIL -> countConfirmationCode += this.confirmationCodeRepository.countByTypeAndUser_Id(Type.EMAIL, codeRequest.getUserId());
-            case PASSWORD -> countConfirmationCode += this.confirmationCodeRepository.countByTypeAndUser_Id(Type.PASSWORD, codeRequest.getUserId());
+            case EMAIL -> countConfirmationCode += this.confirmationCodeRepository.countByTypeAndUser_Id(Type.EMAIL, user.getId());
+            case PASSWORD -> countConfirmationCode += this.confirmationCodeRepository.countByTypeAndUser_Id(Type.PASSWORD, user.getId());
             default -> throw new ValidationException("The confirmationCodeType is invalid.");
         }
 
@@ -47,26 +46,23 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
             throw new ValidationException("The email has already been sent. If you haven't received it, then recreate it.");
         }
 
-        Random random = new Random();
-        User user = new User();
-        user.setId(codeRequest.getUserId());
+        checkTheEmailConfirmation(user, codeRequest);
 
         ConfirmationCode confirmationCode = this.confirmationCodeRepository.save(new ConfirmationCode(
-                null, random.nextInt(9_999_999),LocalDateTime.now().plusHours(EXPIRATION),codeRequest.getConfirmationCodeType(),user
+                null, this.random.nextInt(1_000_000, 9_999_999),LocalDateTime.now().plusHours(EXPIRATION),codeRequest.getConfirmationCodeType(),user
         ));
 
         return confirmationCode.getCode();
     }
 
     @Override
-    public Integer recreate(CreateConfirmationCodeRequest codeRequest) {
-        this.confirmationCodeRepository.deleteByUser_Id(codeRequest.getUserId());
-        User user = new User();
-        user.setId(codeRequest.getUserId());
-        Random random = new Random();
+    public Integer recreate(User user, CreateConfirmationCodeRequest codeRequest) {
+        this.confirmationCodeRepository.deleteByUser_Id(user.getId());
+
+        checkTheEmailConfirmation(user, codeRequest);
 
         ConfirmationCode confirmationCode = this.confirmationCodeRepository.save(new ConfirmationCode(
-                null, random.nextInt(9_999_999),LocalDateTime.now().plusHours(EXPIRATION),codeRequest.getConfirmationCodeType(),user
+                null, this.random.nextInt(1_000_000, 9_999_999),LocalDateTime.now().plusHours(EXPIRATION),codeRequest.getConfirmationCodeType(),user
         ));
 
         return confirmationCode.getCode();
@@ -74,11 +70,11 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
 
     @Override
     public void confirmEmail(CodeVerificationRequest code) {
-        ConfirmationCode confirmationCode = this.confirmationCodeRepository.findByTypeAndUser_Id(Type.EMAIL, code.getUserId())
+        ConfirmationCode confirmationCode = this.confirmationCodeRepository.findByTypeAndUser_Email(Type.EMAIL, code.getEmail())
                 .orElseThrow(() -> new NotFoundException("Code not found"));
 
         if(Objects.equals(confirmationCode.getCode(), code.getCode()) && LocalDateTime.now().isBefore(confirmationCode.getExpirationDate())){
-            this.userService.updateEmailConfirmedStatus(code.getUserId());
+            this.userService.updateEmailConfirmedStatus(code.getEmail());
             this.confirmationCodeRepository.deleteById(confirmationCode.getId());
         } else {
             throw new ValidationException("The confirmation code is not valid.");
@@ -87,8 +83,9 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
 
     @Override
     public void updatePassword(UpdatePasswordRequest passwordRequest, String jwtToken) {
-        ConfirmationCode confirmationCode =  this.confirmationCodeRepository.findByTypeAndUser_Id(Type.PASSWORD, passwordRequest.getCodeVerificationRequest().getUserId())
-                .orElseThrow(() -> new NotFoundException(passwordRequest.getCodeVerificationRequest().getUserId()));
+        ConfirmationCode confirmationCode =  this.confirmationCodeRepository.findByTypeAndUser_Email(Type.PASSWORD,
+                        passwordRequest.getCodeVerificationRequest().getEmail())
+                .orElseThrow(() -> new NotFoundException(passwordRequest.getCodeVerificationRequest().getEmail()));
 
         if(!Objects.equals(confirmationCode.getCode(), passwordRequest.getCodeVerificationRequest().getCode()) ||
                 LocalDateTime.now().isAfter(confirmationCode.getExpirationDate())){
@@ -98,8 +95,14 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
             throw new ValidationException("Passwords don't match.");
         }
 
-        this.userService.updateEmail(passwordRequest.getCodeVerificationRequest().getUserId(),passwordRequest.getNewPassword());
+        this.userService.updatePassword(passwordRequest.getCodeVerificationRequest().getEmail(),passwordRequest.getNewPassword());
         this.confirmationCodeRepository.deleteByCode(confirmationCode.getCode());
         this.identityClient.deleteAllRefreshTokens(confirmationCode.getUser().getId(), jwtToken);
+    }
+
+    private void checkTheEmailConfirmation(User user, CreateConfirmationCodeRequest codeRequest){
+        if(user.getEmailConfirmed() && codeRequest.getConfirmationCodeType() == Type.EMAIL){
+            throw new ValidationException("The email was confirmed");
+        }
     }
 }
