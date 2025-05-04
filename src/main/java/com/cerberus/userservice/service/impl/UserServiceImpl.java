@@ -45,8 +45,6 @@ public class UserServiceImpl implements UserService {
         log.info("create {}", userDto);
         userDto.setEmailConfirmed(false);
         this.userRepository.save(this.userMapper.toEntity(userDto));
-
-        this.cacheClear.clearGetByEmail();
     }
 
     @Override
@@ -68,7 +66,6 @@ public class UserServiceImpl implements UserService {
         }, () -> {
             throw new NotFoundException(id);
         });
-        this.cacheClear.clearGetByEmail();
     }
 
     @Override
@@ -81,12 +78,9 @@ public class UserServiceImpl implements UserService {
         );
 
         this.userRepository.deleteById(id);
-
-        this.cacheClear.clearGetByEmail();
     }
 
     @Override
-    @Cacheable(value = "getByEmail", key = "#email")
     public UserDto getByEmail(String email) {
         return this.userMapper.toDto(this.userRepository.findByEmail(email).orElseThrow(
                 () -> new NotFoundException(email)
@@ -95,19 +89,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "user", key = "#id")
-    public void updateEmailConfirmedStatus(Long id) {
-        User user = this.userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(id));
+    public void updateEmailConfirmedStatus(String email) {
+        User user = this.userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException(email));
         user.setEmailConfirmed(true);
+
+        this.cacheClear.clearUserById(user.getId());
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "user", key = "#id")
-    public void updateEmail(Long id, String newPassword) {
-        User user = this.userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(id));
+    public void updatePassword(String email, String newPassword) {
+        User user = this.userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException(email));
         user.setPassword(this.passwordEncoder.encode(newPassword));
+
+        this.cacheClear.clearUserById(user.getId());
     }
 }
+

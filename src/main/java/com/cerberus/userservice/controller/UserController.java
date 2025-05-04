@@ -30,12 +30,6 @@ public class UserController {
         return this.userService.get(id);
     }
 
-    @GetMapping("/email")
-    @Operation(summary = "Get user by email")
-    public UserDto getByEmail(@RequestParam("email") String email){
-         return this.userService.getByEmail(email);
-    }
-
     @PatchMapping("/{id}")
     @Operation(summary = "Update user")
     public ResponseEntity<String> update(@PathVariable("id") Long id, @RequestBody @Valid UserDto userDto, BindingResult bindingResult){

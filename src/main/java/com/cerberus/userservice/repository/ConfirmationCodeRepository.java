@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface ConfirmationCodeRepository extends JpaRepository<ConfirmationCode, Long> {
 
-    Optional<ConfirmationCode> findByTypeAndUser_Id(Type type, Long userId);
+    Optional<ConfirmationCode> findByTypeAndUser_Email(Type type, String email);
 
     void deleteByUser_Id(Long userId);
 

@@ -1,9 +1,6 @@
 package com.cerberus.userservice.service;
 
 import com.cerberus.userservice.dto.UserDto;
-import com.cerberus.userservice.model.User;
-
-import java.util.Optional;
 
 public interface UserService {
 
@@ -17,7 +14,7 @@ public interface UserService {
 
     UserDto getByEmail(String email);
 
-    void updateEmailConfirmedStatus(Long userId);
+    void updateEmailConfirmedStatus(String email);
 
-    void updateEmail(Long userId, String newPassword);
+    void updatePassword(String email, String newPassword);
 }

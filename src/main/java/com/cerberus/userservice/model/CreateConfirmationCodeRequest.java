@@ -1,6 +1,5 @@
 package com.cerberus.userservice.model;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,8 +14,5 @@ public class CreateConfirmationCodeRequest {
     private Type confirmationCodeType;
 
     @NotNull(message = "The userId cannot be empty.")
-    private Long userId;
-
-    @NotBlank(message = "The email cannot be empty.")
     private String email;
 }
