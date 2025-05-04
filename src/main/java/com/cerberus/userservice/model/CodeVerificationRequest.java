@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class CodeVerificationRequest {
 
     @NotNull(message = "The userId field cannot be empty.")
-    private Long userId;
+    private String email;
 
     @NotNull(message = "The code field cannot be empty.")
     private Integer code;

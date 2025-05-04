@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class CacheClear {
 
-    @CacheEvict(value = "getByEmail", allEntries = true)
-    public void clearGetByEmail(){
-        log.info("clearGetByEmail");
+    @CacheEvict(value = "user", key = "#id")
+    public void clearUserById(Long id){ //check usages
+        log.info("clearUser");
     }
 }
