@@ -4,6 +4,7 @@ import com.cerberus.userservice.exception.AlreadyExistsException;
 import com.cerberus.userservice.exception.AuthorizationException;
 import com.cerberus.userservice.exception.NotFoundException;
 import com.cerberus.userservice.exception.ValidationException;
+import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,6 +46,16 @@ public class AdviceController {
                 HttpStatus.UNAUTHORIZED, exception.getMessage()
         );
         problemDetail.setTitle("Unauthorized");
+        return problemDetail;
+    }
+
+    @ExceptionHandler(RequestNotPermitted.class)
+    public ProblemDetail handleException(RequestNotPermitted exception){
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.TOO_MANY_REQUESTS, exception.getMessage()
+        );
+        problemDetail.setTitle("Too many requests");
+        problemDetail.setDetail("The allowed number of requests has been exceeded. Please repeat later.");
         return problemDetail;
     }
 }

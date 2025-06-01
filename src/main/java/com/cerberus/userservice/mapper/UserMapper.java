@@ -2,13 +2,23 @@ package com.cerberus.userservice.mapper;
 
 import com.cerberus.userservice.dto.UserDto;
 import com.cerberus.userservice.model.User;
-import org.mapstruct.Mapper;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface UserMapper {
+@Component
+@RequiredArgsConstructor
+public class UserMapper implements Mappable<User, UserDto>{
 
-    UserDto toDto(User user);
+    private final ModelMapper modelMapper;
 
-    User toEntity(UserDto userDto);
+    @Override
+    public User toEntity(UserDto userDto) {
+        return this.modelMapper.map(userDto, User.class);
+    }
 
+    @Override
+    public UserDto toDto(User userCredential) {
+        return this.modelMapper.map(userCredential, UserDto.class);
+    }
 }

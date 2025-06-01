@@ -13,7 +13,8 @@ class TestcontainersConfiguration {
     @Bean
     @ServiceConnection
     PostgreSQLContainer<?> postgresContainer() {
-        return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15.1-alpine"));
+        return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15.1-alpine"))
+                .withInitScript("init.sql");
     }
 
     @Bean
