@@ -3,6 +3,7 @@ package com.cerberus.userservice.controller;
 import com.cerberus.userservice.dto.UserDto;
 import com.cerberus.userservice.exception.ValidationException;
 import com.cerberus.userservice.service.UserService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 @Tag(name = "User Controller", description = "Interaction with user")
+@RateLimiter(name = "userLimiter")
 public class UserController {
 
     private final UserService userService;

@@ -9,6 +9,9 @@ import com.cerberus.userservice.model.User;
 import com.cerberus.userservice.service.ConfirmationCodeService;
 import com.cerberus.userservice.service.MailService;
 import com.cerberus.userservice.service.UserService;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/confirmation-codes")
 @RequiredArgsConstructor
+@RateLimiter(name = "confirmationCodeLimiter")
+@Tag(name = "ConfirmationCode Controller", description = "Interaction with user")
 public class ConfirmationCodeController {
 
     private final ConfirmationCodeService confirmationCodeService;
@@ -34,6 +39,7 @@ public class ConfirmationCodeController {
     private final UserMapper userMapper;
 
     @PostMapping("/confirm")
+    @Operation(summary = "Email confirmation")
     public ResponseEntity<String> confirmEmail(@RequestBody @Valid CodeVerificationRequest codeVerificationRequest,
                                           BindingResult bindingResult){
         if(bindingResult.hasFieldErrors()) throw new ValidationException(collectErrorsToString(bindingResult.getFieldErrors()));
@@ -43,6 +49,7 @@ public class ConfirmationCodeController {
     }
 
     @PostMapping("/update-password")
+    @Operation(summary = "Password updating")
     public ResponseEntity<String> updatePassword(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest,
                                                  BindingResult bindingResult, HttpServletRequest httpServletRequest){
         if(bindingResult.hasFieldErrors()) throw new ValidationException(collectErrorsToString(bindingResult.getFieldErrors()));
@@ -53,6 +60,7 @@ public class ConfirmationCodeController {
     }
 
     @PostMapping("/recreate")
+    @Operation(summary = "Recreate a new confirmation code")
     public ResponseEntity<String> recreate(@RequestBody @Valid CreateConfirmationCodeRequest codeRequest,
                                            BindingResult bindingResult){
         if(bindingResult.hasFieldErrors()) throw new ValidationException(collectErrorsToString(bindingResult.getFieldErrors()));
@@ -66,6 +74,7 @@ public class ConfirmationCodeController {
     }
 
     @PostMapping("/create")
+    @Operation(summary = "Create a new confirmation code")
     public ResponseEntity<String> create(@RequestBody @Valid CreateConfirmationCodeRequest codeRequest,
                                          BindingResult bindingResult){
         if(bindingResult.hasFieldErrors()) throw new ValidationException(collectErrorsToString(bindingResult.getFieldErrors()));
