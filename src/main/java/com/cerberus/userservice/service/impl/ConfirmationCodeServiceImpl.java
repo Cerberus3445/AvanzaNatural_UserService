@@ -32,17 +32,18 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
 
     private final Random random = new Random();
 
+    /**
+     * The method creates a new confirmation code for a user.
+     * The confirmation code is unique for each user and has a type.
+     * The method checks if the user has already confirmation code with the same type.
+     * If the user has a confirmation code with the same type, the method throws ValidationException.
+     * The method saves the confirmation code and returns the confirmation code.
+     */
     @Override
     public Integer create(User user, CreateConfirmationCodeRequest codeRequest) {
-        Integer countConfirmationCode = 0;
+        Integer countOfConfirmationCode = countCodesByTypeAndUser(user, codeRequest);
 
-        switch(codeRequest.getConfirmationCodeType()){
-            case EMAIL -> countConfirmationCode += this.confirmationCodeRepository.countByTypeAndUser_Id(Type.EMAIL, user.getId());
-            case PASSWORD -> countConfirmationCode += this.confirmationCodeRepository.countByTypeAndUser_Id(Type.PASSWORD, user.getId());
-            default -> throw new ValidationException("The confirmationCodeType is invalid.");
-        }
-
-        if(countConfirmationCode >= 1){ //The capacities allow you to send only 1 email
+        if(countOfConfirmationCode >= 1){ //The capacities allow you to send only 1 email
             throw new ValidationException("The email has already been sent. If you haven't received it, then recreate it.");
         }
 
@@ -55,19 +56,40 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
         return confirmationCode.getCode();
     }
 
+    /**
+     * The method recreates a confirmation code for a user.
+     * The confirmation code is unique for each user and has a type.
+     * The method checks if the user has already confirmation code with the same type.
+     * If the user has a confirmation code with the same type, the method deletes the old confirmation code and creates a new one.
+     * If the user doesn't have a confirmation code with the same type, the method throws ValidationException.
+     * The method saves the confirmation code and returns the confirmation code.
+     */
     @Override
     public Integer recreate(User user, CreateConfirmationCodeRequest codeRequest) {
-        this.confirmationCodeRepository.deleteByUser_Id(user.getId());
+        Integer countOfConfirmationCode = countCodesByTypeAndUser(user, codeRequest);
+
+        if(countOfConfirmationCode  == 0){ //The capacities allow you to send only 1 email
+            throw new ValidationException("You couldn't recreate the code because no emails were sent to your email.");
+        }
+
+        this.confirmationCodeRepository.deleteByTypeAndUser_Id(codeRequest.getConfirmationCodeType(), user.getId());
 
         checkTheEmailConfirmation(user, codeRequest);
 
         ConfirmationCode confirmationCode = this.confirmationCodeRepository.save(new ConfirmationCode(
-                null, this.random.nextInt(1_000_000, 9_999_999),LocalDateTime.now().plusHours(EXPIRATION),codeRequest.getConfirmationCodeType(),user
+                null, this.random.nextInt(1_000_000, 9_999_999), LocalDateTime.now().plusHours(EXPIRATION),
+                codeRequest.getConfirmationCodeType(), user
         ));
 
         return confirmationCode.getCode();
     }
 
+    /**
+     * The method confirms the user's email.
+     * The method checks if the code verification request is valid.
+     * If the code verification request is valid, the method updates the user's email confirmed status and deletes the confirmation code.
+     * If the code verification request is not valid, the method throws ValidationException.
+     */
     @Override
     public void confirmEmail(CodeVerificationRequest code) {
         ConfirmationCode confirmationCode = this.confirmationCodeRepository.findByTypeAndUser_Email(Type.EMAIL, code.getEmail())
@@ -81,8 +103,16 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
         }
     }
 
+    /**
+     * The method updates the user's password.
+     * The method checks if the code verification request is valid.
+     * If the code verification request is valid, the method updates the user's password and deletes the confirmation code.
+     * If the code verification request is not valid, the method throws ValidationException.
+     * The method also deletes all refresh tokens of the user.
+     * @param passwordRequest the request with new password and confirmation code.
+     */
     @Override
-    public void updatePassword(UpdatePasswordRequest passwordRequest, String jwtToken) {
+    public void updatePassword(UpdatePasswordRequest passwordRequest) {
         ConfirmationCode confirmationCode =  this.confirmationCodeRepository.findByTypeAndUser_Email(Type.PASSWORD,
                         passwordRequest.getCodeVerificationRequest().getEmail())
                 .orElseThrow(() -> new NotFoundException(passwordRequest.getCodeVerificationRequest().getEmail()));
@@ -97,12 +127,36 @@ public class ConfirmationCodeServiceImpl implements ConfirmationCodeService {
 
         this.userService.updatePassword(passwordRequest.getCodeVerificationRequest().getEmail(),passwordRequest.getNewPassword());
         this.confirmationCodeRepository.deleteByCode(confirmationCode.getCode());
-        this.identityClient.deleteAllRefreshTokens(confirmationCode.getUser().getId(), jwtToken);
+        this.identityClient.deleteAllRefreshTokens(confirmationCode.getUser().getId());
     }
 
+    /**
+     * The method checks if the user has already confirmed his email.
+     * If the user has already confirmed his email and the confirmation code type is EMAIL,
+     * the method throws ValidationException.
+     * @param user the user to check.
+     * @param codeRequest the request with confirmation code type.
+     */
     private void checkTheEmailConfirmation(User user, CreateConfirmationCodeRequest codeRequest){
         if(user.getEmailConfirmed() && codeRequest.getConfirmationCodeType() == Type.EMAIL){
             throw new ValidationException("The email was confirmed");
         }
+    }
+
+    /**
+     * The method counts the number of confirmation codes of the user by type.
+     * The method returns the count of confirmation codes.
+     * @param user the user to count confirmation codes.
+     * @param codeRequest the request with confirmation code type.
+     * @return the count of confirmation codes.
+     */
+    private Integer countCodesByTypeAndUser(User user, CreateConfirmationCodeRequest codeRequest){
+        Integer count = 0;
+        switch(codeRequest.getConfirmationCodeType()){
+            case EMAIL -> count += this.confirmationCodeRepository.countByTypeAndUser_Id(Type.EMAIL, user.getId());
+            case PASSWORD -> count += this.confirmationCodeRepository.countByTypeAndUser_Id(Type.PASSWORD, user.getId());
+            default -> throw new ValidationException("The confirmationCodeType is invalid.");
+        }
+        return count;
     }
 }

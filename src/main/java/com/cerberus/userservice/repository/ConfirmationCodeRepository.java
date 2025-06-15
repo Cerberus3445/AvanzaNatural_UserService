@@ -12,7 +12,7 @@ public interface ConfirmationCodeRepository extends JpaRepository<ConfirmationCo
 
     Optional<ConfirmationCode> findByTypeAndUser_Email(Type type, String email);
 
-    void deleteByUser_Id(Long userId);
+    void deleteByTypeAndUser_Id(Type type, Long userId);
 
     Integer countByTypeAndUser_Id(Type type, Long userId);
 

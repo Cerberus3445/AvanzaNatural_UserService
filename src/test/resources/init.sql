@@ -29,8 +29,34 @@ create table if not exists users.refresh_token (
 );
 
 -- this is for tests
+
+-- Test: UserTests get()
+-- Description: Get the user
 insert into users.user(first_name, last_name, email, password, role, email_confirmed) values ('Mike', 'Thompson', 'mike_thompson@gmail.com', 'password123', 'ROLE_USER',false);
+
+-- Test: UserTests update()
+-- Description: Update the user
 insert into users.user(first_name, last_name, email, password, role, email_confirmed) values ('Kate', 'Thompson', 'kate_thompson@gmail.com', '123password123', 'ROLE_USER', false);
+
+-- Test: UserTests delete()
+-- Description: Delete the user
 insert into users.user(first_name, last_name, email, password, role, email_confirmed) values ('Jake', 'Thompson', 'jake_thompson@gmail.com', '123password123', 'ROLE_USER', false);
 
+-- Test: ConfirmationCodeTests create()
+-- Description: It is necessary for the correct creation of the confirmation code.
 insert into users.user(first_name, last_name, email, password, role, email_confirmed) values ('Ryan', 'Thompson', 'rayan_thompson@gmail.com', '123password123', 'ROLE_USER', false);
+
+-- Test: ConfirmationCodeTests confirmEmail()
+-- Description: Confirm the email
+insert into users.user(first_name, last_name, email, password, role, email_confirmed) values ('Jeff', 'Bezos', 'jeffbezos@gmail.com', '123password123', 'ROLE_USER', false);
+insert into users.confirmation_code(code, expiration_date, type, user_id) values (1234567, '2029-06-15 14:30:45.123456', 'EMAIL',5);
+
+-- Test: ConfirmationCodeTests recreate()
+-- Description: recreate the confirmation code
+insert into users.user(first_name, last_name, email, password, role, email_confirmed) values ('Donald', 'Trump', 'donaldtrump@gmail.com', '123password123', 'ROLE_USER', false);
+insert into users.confirmation_code(code, expiration_date, type, user_id) values (1234567, '2029-06-15 14:30:45.123456', 'EMAIL',6);
+
+-- Test: ConfirmationCodeTests updatePassword()
+-- Description: recreate the confirmation code
+insert into users.user(first_name, last_name, email, password, role, email_confirmed) values ('Pavel', 'Durov', 'paveldurovtg@gmail.com', '123password123', 'ROLE_USER', false);
+insert into users.confirmation_code(code, expiration_date, type, user_id) values (1234567, '2029-06-15 14:30:45.123456', 'PASSWORD',7);

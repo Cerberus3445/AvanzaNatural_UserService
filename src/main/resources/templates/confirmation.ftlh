@@ -37,7 +37,7 @@
         <p>Hello, ${firstName} ${lastName}!</p>
         <p>Your code ${code}.</p>
         <p>With best regards, <br>Egor Malov</p>
-        <a id="a" href="https://github.com/Cerberus3445/TaskListProject">Github</a>
+        <a id="a" href="https://avatars.mds.yandex.net/i?id=04b8888297f1932da336421ecc698f87_l-4031997-images-thumbs&n=13">Github</a>
     </div>
 </div>
 </body>

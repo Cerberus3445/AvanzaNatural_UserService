@@ -51,11 +51,10 @@ public class ConfirmationCodeController {
     @PostMapping("/update-password")
     @Operation(summary = "Password updating")
     public ResponseEntity<String> updatePassword(@RequestBody @Valid UpdatePasswordRequest updatePasswordRequest,
-                                                 BindingResult bindingResult, HttpServletRequest httpServletRequest){
+                                                 BindingResult bindingResult){
         if(bindingResult.hasFieldErrors()) throw new ValidationException(collectErrorsToString(bindingResult.getFieldErrors()));
 
-        String jwtToken = httpServletRequest.getHeader("Authorization").substring(7);
-        this.confirmationCodeService.updatePassword(updatePasswordRequest, jwtToken);
+        this.confirmationCodeService.updatePassword(updatePasswordRequest);
         return ResponseEntity.ok("The password has been successfully changed.");
     }
 
@@ -65,7 +64,9 @@ public class ConfirmationCodeController {
                                            BindingResult bindingResult){
         if(bindingResult.hasFieldErrors()) throw new ValidationException(collectErrorsToString(bindingResult.getFieldErrors()));
 
-        User user = this.userMapper.toEntity(this.userService.getByEmail(codeRequest.getEmail()));
+        User user = this.userMapper.toEntity(
+                this.userService.getByEmail(codeRequest.getEmail())
+        );
 
         Integer code = this.confirmationCodeService.recreate(user, codeRequest);
 
@@ -79,7 +80,10 @@ public class ConfirmationCodeController {
                                          BindingResult bindingResult){
         if(bindingResult.hasFieldErrors()) throw new ValidationException(collectErrorsToString(bindingResult.getFieldErrors()));
 
-        User user = this.userMapper.toEntity(this.userService.getByEmail(codeRequest.getEmail()));
+        User user = this.userMapper.toEntity(
+                this.userService.getByEmail(codeRequest.getEmail())
+        );
+
         Integer code = this.confirmationCodeService.create(user, codeRequest);
 
         this.mailService.sendEmail(user,code);
