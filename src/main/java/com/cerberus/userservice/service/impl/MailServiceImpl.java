@@ -11,6 +11,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ public class MailServiceImpl implements MailService {
     private final JavaMailSender mailSender;
 
     @Override
+    @Async("asyncTaskExecutor")
     @SneakyThrows(MessagingException.class)
     public void sendEmail(User user, Integer code) {
         MimeMessage mimeMessage = this.mailSender.createMimeMessage();

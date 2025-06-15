@@ -13,5 +13,5 @@ public interface ConfirmationCodeService {
 
     void confirmEmail(CodeVerificationRequest codeRequest);
 
-    void updatePassword(UpdatePasswordRequest passwordRequest, String jwtToken);
+    void updatePassword(UpdatePasswordRequest passwordRequest);
 }
